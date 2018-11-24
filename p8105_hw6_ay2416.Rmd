@@ -2,11 +2,30 @@
 title: "Homework 6"
 author: "Amin Yakubu"
 date: "11/24/2018"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+In the code chunk below, I am creating a city_state variable (e.g. “Baltimore, MD”), and a binary variable indicating whether the homicide is solved. I will also remove Dallas, TX; Phoenix, AZ; and Kansas City, MO – these don’t report victim race and then Tulsa, AL – this is a data entry mistake.
+
+I will then modify victim_race to have categories white and non-white, with white as the reference category and make victim_age numeric.
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+homicide_df = read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv", col_names = TRUE) %>% 
+  mutate(city_state = str_c(city, ",", " ", state),
+         solved = if_else(disposition == "Closed by arrest", "yes", "no"),
+         solved = fct_relevel(solved, "yes"),
+         victim_race = tolower(victim_race),
+         colpsd_victim_race = fct_collapse(victim_race, "non-white" = c("asian","black", "hispanic", "other", "unknown")),
+         colpsd_victim_race = fct_relevel(colpsd_victim_race, "white"),
+         victim_age = as.numeric(victim_age)) %>% 
+  filter(city_state != "Dallas, TX" & city_state != "Phoenix, AZ" & city_state != "Kansas City, Mo" & city_state != "Tulsa, AL") 
+```
 
