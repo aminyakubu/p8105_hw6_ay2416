@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(modelr)
 ```
 
 ### Problem 1
@@ -113,14 +114,69 @@ There are no missing obervations for the variables.
 
 Linear regression maybe appropriate, since the outcome of interest is continuous. 
 
-```{r}
+I am hypothesizing that gestational age in weeks is associated with baby's birthweight. Based on literature, I will adjust for
+baby's sex, mom's age, mom's race, mom's weight gain and average number of cigarettes smoked per day during pregnancy.
 
+
+First, I will take a look at the distribution of the two variables. 
+
+```{r}
+ggplot(children_df, aes(x = gaweeks)) + geom_histogram()
+
+ggplot(children_df, aes(x = bwt)) + geom_histogram()
+
+ggplot(children_df, aes(x = gaweeks, y = bwt)) + geom_point() + geom_smooth(method = lm)
+```
+
+Gestational age in weeks appear to be slightly left skewed. Baby's birthweight appear to be normally distributed. 
+
+```{r}
+linear_fit = lm(bwt ~ gaweeks + babysex + momage + mrace  + wtgain + smoken, data = children_df)
+
+linear_fit %>% 
+  broom::tidy() 
+```
+
+a plot of model residuals against fitted values – use add_predictions and add_residuals in making this plot.
+
+```{r}
+children_df %>% 
+  modelr::add_residuals(linear_fit) %>% 
+  ggplot(aes(x = gaweeks, y = resid)) + geom_violin()
+```
+
+```{r}
+children_df %>% 
+  modelr::add_predictions(linear_fit) %>% 
+  ggplot(aes(x = gaweeks, y = pred)) + geom_violin()
+```
+
+#### Comparing two models
+
+```{r}
+fit_null = lm(bwt ~ blength + gaweeks, data = children_df)
+
+fit_alt = lm(bwt ~ bhead * blength *babysex, data = children_df)
+```
+
+```{r}
+anova(fit_null, fit_alt) %>% 
+  broom::tidy()
+```
+
+Cross validation
+
+```{r}
+cv_df =
+  crossv_mc(children_df, 100) %>% 
+  mutate(train = map(train, as_tibble),
+         test = map(test, as_tibble))
 ```
 
 
-
-
-
+```{r}
+cross_validation = 
+```
 
 
 
