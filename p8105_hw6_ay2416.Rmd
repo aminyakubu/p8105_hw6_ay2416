@@ -151,17 +151,14 @@ children_df %>%
   ggplot(aes(x = gaweeks, y = pred)) + geom_violin()
 ```
 
-#### Comparing two models
+#### Comparing two non-nested models
+
+I will use cross validation methods to compare the two models below
 
 ```{r}
 fit_null = lm(bwt ~ blength + gaweeks, data = children_df)
 
 fit_alt = lm(bwt ~ bhead * blength *babysex, data = children_df)
-```
-
-```{r}
-anova(fit_null, fit_alt) %>% 
-  broom::tidy()
 ```
 
 Cross validation
@@ -175,7 +172,21 @@ cv_df =
 
 
 ```{r}
-cross_validation = 
+cross_validation = cv_df %>% 
+  mutate(fit_null = map(train, ~ lm(bwt ~ blength + gaweeks, data = .x)),
+         fit_alt = map(train, ~ lm(bwt ~ bhead * blength *babysex, data = .x))) %>% 
+  mutate(rmse_fit_null = map2_dbl(fit_null, test, ~ rmse(model = .x, data = .y)),
+         rmse_fit_alt = map2_dbl(fit_alt, test, ~ rmse(model = .x, data = .y)))
+  
+```
+
+```{r}
+cross_validation %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+   mutate(model = str_replace(model, "rmse_", ""),
+         model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
 
 
