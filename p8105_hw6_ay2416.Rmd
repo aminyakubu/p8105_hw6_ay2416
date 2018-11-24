@@ -9,13 +9,15 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-In the code chunk below, I am creating a city_state variable (e.g. “Baltimore, MD”), and a binary variable indicating whether the homicide is solved. I will also remove Dallas, TX; Phoenix, AZ; and Kansas City, MO – these don’t report victim race and then Tulsa, AL – this is a data entry mistake.
-
-I will then modify victim_race to have categories white and non-white, with white as the reference category and make victim_age numeric.
-
 ```{r}
 library(tidyverse)
 ```
+
+### Problem 1
+
+In the code chunk below, I am reading in the dataset and creating a city_state variable (e.g. “Baltimore, MD”), and a binary variable indicating whether the homicide is solved. I will also remove Dallas, TX; Phoenix, AZ; and Kansas City, MO – these don’t report victim race and then Tulsa, AL – this is a data entry mistake.
+
+I will then modify victim_race to have categories white and non-white, with white as the reference category and make victim_age numeric.
 
 ```{r}
 homicide_df = read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv", col_names = TRUE) %>% 
@@ -89,4 +91,65 @@ ggplot(fit_logistic_cities, aes(x = city_state, y = OR )) +
 ```
 
 We see that in almost all the cities ( expections, Tampa & Birmingham and Durham) have OR below 1.0. This means that in almost all of the cities, the odds of solving a homicide for non-white is less that white category, adjusting for sex and age. However, it is important to note the confidence intervals - about half include the value of 1, meaning they are not statistically significant. 
+
+
+### Problem 2
+
+```{r}
+children_df = read_csv("./data/birthweight.csv") %>% 
+  mutate(babysex = as.factor(babysex),
+         frace = as.factor(frace),
+         mrace = as.factor(mrace),
+         malform = as.factor(malform))
+
+#checking to see if there are missing variables in any of the variables for the observations
+filter_all(children_df, any_vars(is.na(.)))
+
+sum(is.na(homicide_df))
+
+```
+
+There are no missing obervations for the variables. 
+
+Linear regression maybe appropriate, since the outcome of interest is continuous. 
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
