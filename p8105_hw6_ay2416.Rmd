@@ -131,7 +131,7 @@ ggplot(children_df, aes(x = gaweeks, y = bwt)) + geom_point() + geom_smooth(meth
 Gestational age in weeks appear to be slightly left skewed. Baby's birthweight appear to be normally distributed. 
 
 ```{r}
-linear_fit = lm(bwt ~ gaweeks + babysex + momage + mrace  + wtgain + smoken, data = children_df)
+my_proposed_fit = lm(bwt ~ gaweeks + babysex + momage + mrace  + wtgain + smoken, data = children_df)
 
 linear_fit %>% 
   broom::tidy() 
@@ -156,9 +156,9 @@ children_df %>%
 I will use cross validation methods to compare the two models below
 
 ```{r}
-fit_null = lm(bwt ~ blength + gaweeks, data = children_df)
+two_term_fit = lm(bwt ~ blength + gaweeks, data = children_df)
 
-fit_alt = lm(bwt ~ bhead * blength *babysex, data = children_df)
+three_term_w_interation_fit = lm(bwt ~ bhead * blength *babysex, data = children_df)
 ```
 
 Cross validation
@@ -173,10 +173,12 @@ cv_df =
 
 ```{r}
 cross_validation = cv_df %>% 
-  mutate(fit_null = map(train, ~ lm(bwt ~ blength + gaweeks, data = .x)),
-         fit_alt = map(train, ~ lm(bwt ~ bhead * blength *babysex, data = .x))) %>% 
-  mutate(rmse_fit_null = map2_dbl(fit_null, test, ~ rmse(model = .x, data = .y)),
-         rmse_fit_alt = map2_dbl(fit_alt, test, ~ rmse(model = .x, data = .y)))
+  mutate(two_term_fit = map(train, ~ lm(bwt ~ blength + gaweeks, data = .x)),
+         three_term_w_interation_fit = map(train, ~ lm(bwt ~ bhead * blength *babysex, data = .x)),
+         my_proposed_fit = map(train, ~ lm(bwt ~ gaweeks + babysex + momage + mrace  + wtgain + smoken, data = .x))) %>% 
+  mutate(rmse_two_term_fit = map2_dbl(two_term_fit, test, ~ rmse(model = .x, data = .y)),
+         rmse_three_term_w_interation_fit = map2_dbl(three_term_w_interation_fit, test, ~ rmse(model = .x, data = .y)),
+         rmse_my_proposed_fit = map2_dbl(my_proposed_fit, test, ~ rmse(model = .x, data = .y)))
   
 ```
 
@@ -187,6 +189,14 @@ cross_validation %>%
    mutate(model = str_replace(model, "rmse_", ""),
          model = fct_inorder(model)) %>% 
   ggplot(aes(x = model, y = rmse)) + geom_violin()
+```
+
+```{r}
+cross_validation %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  group_by(model) %>% 
+  summarize(mean_rmse = mean(rmse))
 ```
 
 
