@@ -86,8 +86,8 @@ ggplot(fit_logistic_cities, aes(x = city_state, y = OR )) +
   coord_flip() +
   geom_hline(aes(yintercept = 1.00), linetype = "dashed", color = "blue") + 
   labs(
-    x = "OR (95% Confidence interval)",
-    y = "City, State"
+    y = "OR (95% Confidence interval)",
+    x = "City, State"
   )
 ```
 
@@ -202,32 +202,4 @@ cross_validation %>%
 
 
 Based on the graph and the averages, it is clear that the better model is the 3 term model with interactions. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
