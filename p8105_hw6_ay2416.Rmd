@@ -133,27 +133,24 @@ Gestational age in weeks appear to be slightly left skewed. Baby's birthweight a
 ```{r}
 my_proposed_fit = lm(bwt ~ gaweeks + babysex + momage + mrace  + wtgain + smoken, data = children_df)
 
-linear_fit %>% 
+my_proposed_fit %>% 
   broom::tidy() 
 ```
 
-a plot of model residuals against fitted values – use add_predictions and add_residuals in making this plot.
+A plot of model residuals against fitted values – use add_predictions and add_residuals in making this plot.
 
 ```{r}
 children_df %>% 
-  modelr::add_residuals(linear_fit) %>% 
-  ggplot(aes(x = gaweeks, y = resid)) + geom_violin()
+  modelr::add_predictions(my_proposed_fit) %>% 
+  modelr::add_residuals(my_proposed_fit) %>% 
+  ggplot(aes(x = pred, y = resid)) + geom_point() +
+  labs(x = "Predicted value", 
+       y = "Residual")
 ```
 
-```{r}
-children_df %>% 
-  modelr::add_predictions(linear_fit) %>% 
-  ggplot(aes(x = gaweeks, y = pred)) + geom_violin()
-```
+#### Comparing 3 non-nested models
 
-#### Comparing two non-nested models
-
-I will use cross validation methods to compare the two models below
+I will use cross validation methods to compare the three models below (2 below and one above)
 
 ```{r}
 two_term_fit = lm(bwt ~ blength + gaweeks, data = children_df)
@@ -164,6 +161,8 @@ three_term_w_interation_fit = lm(bwt ~ bhead * blength *babysex, data = children
 Cross validation
 
 ```{r}
+set.seed(1)
+
 cv_df =
   crossv_mc(children_df, 100) %>% 
   mutate(train = map(train, as_tibble),
@@ -196,7 +195,9 @@ cross_validation %>%
   select(starts_with("rmse")) %>% 
   gather(key = model, value = rmse) %>% 
   group_by(model) %>% 
-  summarize(mean_rmse = mean(rmse))
+  summarize(mean_rmse = mean(rmse)) %>% 
+  arrange(mean_rmse) %>% 
+  knitr::kable(digits = 3)
 ```
 
 
